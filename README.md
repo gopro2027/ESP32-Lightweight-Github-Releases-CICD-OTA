@@ -119,6 +119,21 @@ To add a new board:
 
 [`ota_worker.js`](ota_worker.js) is a single Cloudflare Worker that the device calls to perform OTA. The full request/response flow is diagrammed in [`ota_flowchart.md`](ota_flowchart.md).
 
+### Why one endpoint matters: release discovery is offloaded to the worker
+
+The most important design choice here is that **the worker finds the latest release for the device**. The ESP32 makes exactly one request - it sends its firmware name and the tag it is currently running - and gets back either "you're up to date" (204) or the new binary itself (200). It never has to know which release is latest, what tag to ask for, or where the asset lives.
+
+Previously this logic lived on the microcontroller: the device had to make a preliminary call to the GitHub API, pull down the full JSON list of releases, parse it, locate the latest release, find the matching `*_firmware.bin` asset, resolve its download URL, and only then start the actual download. On a constrained device that JSON parsing was a significant, memory-hungry, and fragile piece of code (large API responses, redirects, TLS, and partial reads frequently broke it).
+
+All of that now happens inside the worker (`fetchCachedReleaseJson()` + `findFirmwareAsset()` in [`ota_worker.js`](ota_worker.js)):
+
+- The worker calls the GitHub `releases/latest` API and parses the JSON server-side, where memory and a real JS runtime are not a concern.
+- It compares the device's `tag` against the latest `tag_name` to decide whether an update is even needed (returning a cheap 204 if not).
+- It locates the correct `<firmware>_firmware.bin` asset and resolves its download URL.
+- It streams that single binary back to the device with a fixed `Content-Length`.
+
+The result is that the device-side code in [`directdownload.cpp`](Example-Github-CICD/src/directdownload.cpp) collapses to a single `GET` and a stream into `Update.writeStream` - no JSON, no release enumeration, no second request - which is far more reliable and uses dramatically less RAM. Because the worker also caches the release JSON (see below), this consolidation does not add GitHub API load even when many devices check in at once.
+
 ### Endpoint
 
 ```

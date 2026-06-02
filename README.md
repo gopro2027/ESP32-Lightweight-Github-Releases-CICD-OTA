@@ -100,6 +100,9 @@ You also have to allow the third-party release action to run at all. In **Settin
 
 Without this the build will succeed but the release step will fail to publish.
 
+<img width="856" height="595" alt="image" src="https://github.com/user-attachments/assets/2ad3e1cb-a284-439f-b0b4-b6423b362c4d" />
+
+
 ### PlatformIO environment design
 
 [`platformio.ini`](Example-Github-CICD/platformio.ini) splits each board into a `_dev` and a `_release` environment:

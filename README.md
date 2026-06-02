@@ -215,7 +215,9 @@ Key points:
 
 The [`docs/flash/`](docs/flash) folder is a self-contained web installer that lets end users flash a board from the browser over USB serial using [ESP Web Tools](https://esphome.github.io/esp-web-tools/) - no PlatformIO or drivers-toolchain required.
 
-A live example of this repo's installer is at **[https://ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co/flash/](https://ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co/flash/)** (custom domain via [`docs/CNAME`](docs/CNAME)). Visiting the site root at [https://ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co/](https://ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co/) redirects to `/flash` via [`docs/index.html`](docs/index.html).
+**[View the demo of the flashing site](https://ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co/flash/)** to see what the web installer looks like (custom domain via [`docs/CNAME`](docs/CNAME)). Visiting the site root at [https://ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co/](https://ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co/) redirects to `/flash` via [`docs/index.html`](docs/index.html).
+
+**Note:** this is a demo only — flashing will not succeed because the Cloudflare workers are not published.
 
 - [`index.html`](docs/flash/index.html) fetches your repo's releases from the GitHub API, lists boards, and wires up the install button.
 - [`manifestgen.js`](docs/flash/manifestgen.js) builds the ESP Web Tools manifest at runtime, pointing at the bootloader, partitions, `boot_app0.bin`, and firmware with the correct flash offsets (`0x1000`, `0x8000`, `0xe000`, `0x10000`). It also duplicates the build entry for the ESP32-S3 chip family with a `0` bootloader offset, and `boot_app0.bin` is loaded from `raw.githubusercontent.com`.
@@ -248,7 +250,7 @@ The web installer is hosted for free out of the [`docs/`](docs) folder on GitHub
 3. Under **Build and deployment > Source**, choose **Deploy from a branch**.
 4. Set the branch to **`main`** and the folder to **`/docs`**, then click **Save**.
 5. Wait for the first deployment to finish (GitHub shows the live URL at the top of the Pages settings once it is ready; it can take a minute or two on the first publish).
-6. The installer is served at `https://<your-username>.github.io/<your-repo>/flash/` - for the example repo that is [`https://gopro2027.github.io/ESP32-Lightweight-Github-Releases-CICD-OTA/flash/`](https://gopro2027.github.io/ESP32-Lightweight-Github-Releases-CICD-OTA/flash/), or on the custom domain at [`https://ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co/flash/`](https://ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co/flash/).
+6. The installer is served at `https://<your-username>.github.io/<your-repo>/flash/` - for the example repo that is [`https://gopro2027.github.io/ESP32-Lightweight-Github-Releases-CICD-OTA/flash/`](https://gopro2027.github.io/ESP32-Lightweight-Github-Releases-CICD-OTA/flash/). You can also [view the demo of the flashing site](https://ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co/flash/) on the custom domain to preview the UI (**note:** flashing will not succeed there because the workers are not published).
 
 Notes:
 

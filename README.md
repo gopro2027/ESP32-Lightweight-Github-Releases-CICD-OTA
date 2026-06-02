@@ -47,6 +47,9 @@ flowchart LR
   - [`src/directdownload.cpp`](Example-Github-CICD/src/directdownload.cpp) / [`src/directdownload.h`](Example-Github-CICD/src/directdownload.h) - the OTA client.
 - [`ota_worker.js`](ota_worker.js) - Cloudflare Worker that powers device OTA.
 - [`githubreleasebinary-http-proxy_worker.js`](githubreleasebinary-http-proxy_worker.js) - Cloudflare Worker reverse proxy used by the web installer to get around GitHub's CORS policy.
+- [`docs/`](docs) - GitHub Pages site root:
+  - [`index.html`](docs/index.html) - redirects the site root to `/flash`.
+  - [`CNAME`](docs/CNAME) - optional custom domain for Pages (this repo uses `ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co`).
 - [`docs/flash/`](docs/flash) - the GitHub Pages web installer:
   - [`index.html`](docs/flash/index.html) - ESP Web Tools UI.
   - [`manifestgen.js`](docs/flash/manifestgen.js) - builds the ESP Web Tools manifest at runtime.
@@ -212,6 +215,8 @@ Key points:
 
 The [`docs/flash/`](docs/flash) folder is a self-contained web installer that lets end users flash a board from the browser over USB serial using [ESP Web Tools](https://esphome.github.io/esp-web-tools/) - no PlatformIO or drivers-toolchain required.
 
+A live example of this repo's installer is at **[https://ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co/flash/](https://ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co/flash/)** (custom domain via [`docs/CNAME`](docs/CNAME)). Visiting the site root at [https://ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co/](https://ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co/) redirects to `/flash` via [`docs/index.html`](docs/index.html).
+
 - [`index.html`](docs/flash/index.html) fetches your repo's releases from the GitHub API, lists boards, and wires up the install button.
 - [`manifestgen.js`](docs/flash/manifestgen.js) builds the ESP Web Tools manifest at runtime, pointing at the bootloader, partitions, `boot_app0.bin`, and firmware with the correct flash offsets (`0x1000`, `0x8000`, `0xe000`, `0x10000`). It also duplicates the build entry for the ESP32-S3 chip family with a `0` bootloader offset, and `boot_app0.bin` is loaded from `raw.githubusercontent.com`.
 
@@ -243,14 +248,15 @@ The web installer is hosted for free out of the [`docs/`](docs) folder on GitHub
 3. Under **Build and deployment > Source**, choose **Deploy from a branch**.
 4. Set the branch to **`main`** and the folder to **`/docs`**, then click **Save**.
 5. Wait for the first deployment to finish (GitHub shows the live URL at the top of the Pages settings once it is ready; it can take a minute or two on the first publish).
-6. The installer is served at `https://<your-username>.github.io/<your-repo>/flash/` - for the example repo that is [`https://gopro2027.github.io/ESP32-Lightweight-Github-Releases-CICD-OTA/flash/`](https://gopro2027.github.io/ESP32-Lightweight-Github-Releases-CICD-OTA/flash/).
+6. The installer is served at `https://<your-username>.github.io/<your-repo>/flash/` - for the example repo that is [`https://gopro2027.github.io/ESP32-Lightweight-Github-Releases-CICD-OTA/flash/`](https://gopro2027.github.io/ESP32-Lightweight-Github-Releases-CICD-OTA/flash/), or on the custom domain at [`https://ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co/flash/`](https://ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co/flash/).
 
 Notes:
 
+- [`docs/index.html`](docs/index.html) at the Pages root redirects `/` to `/flash`, so users can share the shorter site URL and still land on the installer.
 - GitHub Pages only serves over **HTTPS**, which is required anyway because [ESP Web Tools](https://esphome.github.io/esp-web-tools/) needs a secure context to access the Web Serial API.
 - The page must reach your deployed reverse-proxy worker, so deploy that worker (steps 1-3 above) and update the URL in [`docs/flash/index.html`](docs/flash/index.html) before relying on the live site.
 - The site is fully static, so re-publishing is just a `git push` to `main`; the cached firmware list comes from the GitHub Releases API at page load, so new releases appear automatically (subject to the worker's ~30 minute cache).
-- A custom domain can be configured under **Settings > Pages > Custom domain** if you do not want the `github.io` URL.
+- A custom domain can be configured under **Settings > Pages > Custom domain** if you do not want the `github.io` URL (this repo uses [`docs/CNAME`](docs/CNAME) for `ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co`).
 
 ---
 

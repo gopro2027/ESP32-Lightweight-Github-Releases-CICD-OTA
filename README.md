@@ -215,8 +215,7 @@ Key points:
 
 The [`docs/flash/`](docs/flash) folder is a self-contained web installer that lets end users flash a board from the browser over USB serial using [ESP Web Tools](https://esphome.github.io/esp-web-tools/) - no PlatformIO or drivers-toolchain required.
 
-**[View the demo of the flashing site](https://ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co/flash/)** to see what the web installer looks like (custom domain via [`docs/CNAME`](docs/CNAME)). Visiting the site root at [https://ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co/](https://ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co/) redirects to `/flash` via [`docs/index.html`](docs/index.html).
-
+**[View the demo of the flashing site](https://ESP32-Lightweight-Github-Releases-CICD-OTA.oasman.co/flash/)** to see what the web installer looks like.
 **Note:** this is a demo only — flashing will not succeed because the Cloudflare workers are not published.
 
 - [`index.html`](docs/flash/index.html) fetches your repo's releases from the GitHub API, lists boards, and wires up the install button.

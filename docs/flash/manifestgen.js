@@ -6,7 +6,7 @@ function generate_manifest(name, version, bootloader, partitions, firmware) {
     var manifest = {
         "name": name,
         "version": version,
-        "funding_url": "https://github.com/sponsors/github_username",
+        "funding_url": "https://github.com/sponsors/gopro2027",
         "new_install_prompt_erase": true,
         "builds": [
             {
@@ -15,7 +15,7 @@ function generate_manifest(name, version, bootloader, partitions, firmware) {
                 "parts": [
                     { "path": bootloader, "offset": 4096 }, // on the s3 this might be 0 but otherwise all the offsets are the same
                     { "path": partitions, "offset": 32768 }, // 0x8000
-                    { "path": "https://raw.githubusercontent.com/github_username/github_repo_name/refs/heads/main/docs/flash/boot_app0.bin", "offset": 57344 }, // 0xe000
+                    { "path": "https://raw.githubusercontent.com/gopro2027/ESP32-Lightweight-Github-Releases-CICD-OTA/refs/heads/main/docs/flash/boot_app0.bin", "offset": 57344 }, // 0xe000
                     { "path": firmware, "offset": 65536 } // 0x10000
                 ]
             }

@@ -7,7 +7,7 @@ export default {
     // Extract the GitHub URL from query parameter
     const targetUrl = url.searchParams.get('url');
     
-    if (!targetUrl || !targetUrl.startsWith('https://github.com/github_username/github_repo_name/releases/download/')) {
+    if (!targetUrl || !targetUrl.startsWith('https://github.com/gopro2027/ESP32-Lightweight-Github-Releases-CICD-OTA/releases/download/')) {
       return new Response('Invalid URL', { status: 400 });
     }
     

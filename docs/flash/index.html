@@ -86,7 +86,7 @@
 		async function fetchFirmwareReleases() {
 
 			try {
-				const response = await fetch(`https://api.github.com/repos/github_username/github_repo_name/releases`);
+				const response = await fetch(`https://api.github.com/repos/gopro2027/ESP32-Lightweight-Github-Releases-CICD-OTA/releases`);
 				const releases = await response.json();
 
 				firmwareList = releases//getResult(binname+"_firmware.bin",releases)
@@ -118,7 +118,7 @@
 
 		function getReleaseAsset(boardName, tag_name, subscript) {
 			// CORS is blocked on github releases direct links so we need a reverse proxy of some sort.
-			return `https://githubreleasebinary-http-proxy.username.workers.dev/?url=https://github.com/github_username/github_repo_name/releases/download/${tag_name}/${boardName}${subscript}`;
+			return `https://githubreleasebinary-http-proxy.username.workers.dev/?url=https://github.com/gopro2027/ESP32-Lightweight-Github-Releases-CICD-OTA/releases/download/${tag_name}/${boardName}${subscript}`;
 			// unfortunately have to use this reverse proxy service I set up on cloudflare instead of using the downloadUrl. Github releases has blocked CORS
 			// This is the original proxy I used without caching
 			//return `https://githubreleasesproxy.username.workers.dev/?tag_name=${tag_name}&file_name=${boardName}${subscript}`;
@@ -158,7 +158,7 @@
 				</p>
 			</div>
 
-			<div class="footer"><a href="https://github.com/github_username/github_repo_name">github_repo_name</a> &mdash; Installer powered by <a href="https://esphome.github.io/esp-web-tools/">ESP Web Tools</a>.</div>
+			<div class="footer"><a href="https://github.com/gopro2027/ESP32-Lightweight-Github-Releases-CICD-OTA">ESP32-Lightweight-Github-Releases-CICD-OTA</a> &mdash; Installer powered by <a href="https://esphome.github.io/esp-web-tools/">ESP Web Tools</a>.</div>
 
 			<div class="footer">
 				<p><small>Thank you!</small></p>

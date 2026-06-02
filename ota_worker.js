@@ -7,10 +7,10 @@
  */
 
 const RELEASES_LATEST_URL =
-  'https://api.github.com/repos/<github_username>/<github_repo_name>/releases/latest';
+  'https://api.github.com/repos/gopro2027/ESP32-Lightweight-Github-Releases-CICD-OTA/releases/latest';
 
 const BINARY_URL_PREFIX =
-  'https://github.com/<github_username>/<github_repo_name>/releases/download/';
+  'https://github.com/gopro2027/ESP32-Lightweight-Github-Releases-CICD-OTA/releases/download/';
 
 const FIRMWARE_NAME_RE = /^[a-zA-Z0-9_]+$/;
 const CACHE_TTL_MS = 30 * 60 * 1000;

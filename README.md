@@ -55,10 +55,10 @@ flowchart LR
 
 ## Placeholders you must replace
 
-Search-and-replace these tokens across the repo before deploying:
+The GitHub references in this repo are already wired to the live example project, `gopro2027/ESP32-Lightweight-Github-Releases-CICD-OTA`. If you are copying this into your own project, search-and-replace `gopro2027` (your GitHub username/org) and `ESP32-Lightweight-Github-Releases-CICD-OTA` (your repo name) across [`ota_worker.js`](ota_worker.js), [`githubreleasebinary-http-proxy_worker.js`](githubreleasebinary-http-proxy_worker.js), [`docs/flash/index.html`](docs/flash/index.html), and [`docs/flash/manifestgen.js`](docs/flash/manifestgen.js).
 
-- `<github_username>` / `github_username` - your GitHub username/org. Appears in [`ota_worker.js`](ota_worker.js), [`githubreleasebinary-http-proxy_worker.js`](githubreleasebinary-http-proxy_worker.js), [`docs/flash/index.html`](docs/flash/index.html), [`docs/flash/manifestgen.js`](docs/flash/manifestgen.js).
-- `<github_repo_name>` / `github_repo_name` - this repo's name. Same files as above.
+The Cloudflare placeholders are still templated and must be set before deploying:
+
 - `<worker_name>` - the name you give the OTA Cloudflare Worker. Appears in [`ota_worker.js`](ota_worker.js) and [`directdownload.h`](Example-Github-CICD/src/directdownload.h).
 - `<username>` / `username` - your Cloudflare `*.workers.dev` subdomain. Appears in [`directdownload.h`](Example-Github-CICD/src/directdownload.h), [`docs/flash/index.html`](docs/flash/index.html).
 
@@ -96,6 +96,8 @@ Do not change that tag scheme. The device stores the tag it was built with and t
 - Uncomment the `permissions: contents: write` block at the top of [`main.yml`](.github/workflows/main.yml), or
 - Set repo **Settings > Actions > General > Workflow permissions** to **Read and write permissions**.
 
+You also have to allow the third-party release action to run at all. In **Settings > Actions > General > Actions permissions**, check **Allow actions created by GitHub**, and add `softprops/action-gh-release@v3` (or `softprops/action-gh-release@*`) to the list of allowed actions and reusable workflows (alternatively choose "Allow all actions and reusable workflows"). If this action is not allowed, the workflow is blocked before it can publish.
+
 Without this the build will succeed but the release step will fail to publish.
 
 ### PlatformIO environment design
@@ -112,6 +114,8 @@ To add a new board:
 1. Add `[env:<board>_dev]` with its own `FIRMWARE_RELEASE_NAME`.
 2. Add `[env:<board>_release]` extending it (mirroring `esp32_v2_release`).
 3. Add a matching build step in [`main.yml`](.github/workflows/main.yml) (e.g. `./build_firmware.sh "Example-Github-CICD" "<board>"`).
+
+You are not even limited to a single PlatformIO project. Because `build_firmware.sh` takes the project folder as its first argument, you can build an entirely separate project from the same workflow by pointing it at that folder, e.g. `./build_firmware.sh "My-Other-Project" "<board>"`. Add as many build steps (across as many project folders) as you like - every resulting `*_firmware.bin` is attached to the same GitHub Release.
 
 ---
 
@@ -160,9 +164,9 @@ One important detail: the worker buffers the binary and sets an explicit `Conten
 1. Sign in at [dash.cloudflare.com](https://dash.cloudflare.com) and open **Workers & Pages**.
 2. Click **Create application > Create Worker**, give it a name (this becomes `<worker_name>`), and **Deploy** the starter.
 3. Click **Edit code**, delete the starter, and paste the contents of [`ota_worker.js`](ota_worker.js).
-4. Edit the two constants at the top to point at your repo:
-   - `RELEASES_LATEST_URL = 'https://api.github.com/repos/<github_username>/<github_repo_name>/releases/latest'`
-   - `BINARY_URL_PREFIX = 'https://github.com/<github_username>/<github_repo_name>/releases/download/'`
+4. The two constants at the top point at the repo (already set to the example repo - change them to your own `username/repo` if you copied this project):
+   - `RELEASES_LATEST_URL = 'https://api.github.com/repos/gopro2027/ESP32-Lightweight-Github-Releases-CICD-OTA/releases/latest'`
+   - `BINARY_URL_PREFIX = 'https://github.com/gopro2027/ESP32-Lightweight-Github-Releases-CICD-OTA/releases/download/'`
 5. **Save and deploy**. Your endpoint is now `http://<worker_name>.<username>.workers.dev/`.
 6. Put that base URL into `WORKER_URL` in [`directdownload.h`](Example-Github-CICD/src/directdownload.h).
 
@@ -212,12 +216,29 @@ The proxy fetches the asset server-side and re-serves it with `Access-Control-Al
 ### Deploy steps
 
 1. Create a **second** Cloudflare Worker (same flow as section 2) and paste [`githubreleasebinary-http-proxy_worker.js`](githubreleasebinary-http-proxy_worker.js).
-2. Edit the allowed prefix check so it matches your repo:
-   `targetUrl.startsWith('https://github.com/<github_username>/<github_repo_name>/releases/download/')`.
+2. The allowed prefix check is preset to the example repo - if you copied this project, edit it to match yours:
+   `targetUrl.startsWith('https://github.com/gopro2027/ESP32-Lightweight-Github-Releases-CICD-OTA/releases/download/')`.
 3. Deploy, noting its `*.workers.dev` URL.
-4. In [`docs/flash/index.html`](docs/flash/index.html) and [`docs/flash/manifestgen.js`](docs/flash/manifestgen.js), replace `github_username`, `github_repo_name`, and the proxy worker URL with your values. Adjust the board radio options to match your boards.
-5. Enable GitHub Pages: **Settings > Pages**, deploy from the `main` branch and the `/docs` folder.
-6. Your installer is then live at `https://<github_username>.github.io/<github_repo_name>/flash/`.
+4. In [`docs/flash/index.html`](docs/flash/index.html) and [`docs/flash/manifestgen.js`](docs/flash/manifestgen.js), the repo references are preset to `gopro2027/ESP32-Lightweight-Github-Releases-CICD-OTA`; swap in your own user/repo and the proxy worker URL, and adjust the board radio options to match your boards.
+5. Enable GitHub Pages (see the next section), then your installer is live at `https://gopro2027.github.io/ESP32-Lightweight-Github-Releases-CICD-OTA/flash/` (using your own user/repo if you copied the project).
+
+### Setting up the GitHub Pages site
+
+The web installer is hosted for free out of the [`docs/`](docs) folder on GitHub Pages. To enable it:
+
+1. Push this repo (including the [`docs/flash/`](docs/flash) folder) to GitHub.
+2. In your repo, go to **Settings > Pages**.
+3. Under **Build and deployment > Source**, choose **Deploy from a branch**.
+4. Set the branch to **`main`** and the folder to **`/docs`**, then click **Save**.
+5. Wait for the first deployment to finish (GitHub shows the live URL at the top of the Pages settings once it is ready; it can take a minute or two on the first publish).
+6. The installer is served at `https://<your-username>.github.io/<your-repo>/flash/` - for the example repo that is [`https://gopro2027.github.io/ESP32-Lightweight-Github-Releases-CICD-OTA/flash/`](https://gopro2027.github.io/ESP32-Lightweight-Github-Releases-CICD-OTA/flash/).
+
+Notes:
+
+- GitHub Pages only serves over **HTTPS**, which is required anyway because [ESP Web Tools](https://esphome.github.io/esp-web-tools/) needs a secure context to access the Web Serial API.
+- The page must reach your deployed reverse-proxy worker, so deploy that worker (steps 1-3 above) and update the URL in [`docs/flash/index.html`](docs/flash/index.html) before relying on the live site.
+- The site is fully static, so re-publishing is just a `git push` to `main`; the cached firmware list comes from the GitHub Releases API at page load, so new releases appear automatically (subject to the worker's ~30 minute cache).
+- A custom domain can be configured under **Settings > Pages > Custom domain** if you do not want the `github.io` URL.
 
 ---
 

@@ -89,18 +89,27 @@ Do not change that tag scheme. The device stores the tag it was built with and t
 3. Click **Run workflow**, enter a **Version Number To Display On Screen** (the `version_num`), and confirm.
 4. When it finishes, a new Release named `Release <version_num> (Build <run_number>)` appears with the firmware binaries attached.
 
-### One-time permission setup
+### Release permissions (required for publishing)
 
-`softprops/action-gh-release` needs write access to create releases. Either:
+The firmware build can succeed while **Create Release** fails with:
 
-- Uncomment the `permissions: contents: write` block at the top of [`main.yml`](.github/workflows/main.yml), or
-- Set repo **Settings > Actions > General > Workflow permissions** to **Read and write permissions**.
+`403 Resource not accessible by integration`
 
-You also have to allow the third-party release action to run at all. In **Settings > Actions > General > Actions permissions**, check **Allow actions created by GitHub**, and add `softprops/action-gh-release@v3` (or `softprops/action-gh-release@*`) to the list of allowed actions and reusable workflows (alternatively choose "Allow all actions and reusable workflows"). If this action is not allowed, the workflow is blocked before it can publish.
+[`main.yml`](.github/workflows/main.yml) already requests `contents: write`, but **the repository must allow workflows to use write access**. If the repo is set to read-only tokens, GitHub ignores the YAML and the release step keeps failing.
 
-Without this the build will succeed but the release step will fail to publish.
+**Do this on the repo you run the workflow on** (your fork, if you forked this project — not only the upstream repo):
 
-<img width="856" height="595" alt="image" src="https://github.com/user-attachments/assets/2ad3e1cb-a284-439f-b0b4-b6423b362c4d" />
+1. **Settings → Actions → General**
+2. Under **Workflow permissions**, select **Read and write permissions**
+3. Click **Save**
+
+<img width="856" height="595" alt="GitHub Actions workflow permissions: Read and write permissions" src="https://github.com/user-attachments/assets/2ad3e1cb-a284-439f-b0b4-b6423b362c4d" />
+
+Also under **Actions permissions**, allow `softprops/action-gh-release@v3` (or **Allow all actions and reusable workflows**).
+
+**Organization repos:** an org admin may need to enable **Allow GitHub Actions to create and approve pull requests** / permissive workflow tokens under the org’s **Actions** settings, or the repo setting above will stay read-only.
+
+**Optional PAT fallback** (only if the setting above is locked by policy): create a classic PAT with `repo` scope (or fine-grained **Contents: Read and write** on this repository), add it as a repository secret named `RELEASE_PAT`, and re-run the workflow. The release step uses `RELEASE_PAT` when set, otherwise `github.token`.
 
 
 ### PlatformIO environment design
@@ -252,7 +261,7 @@ Notes:
 - **Security trade-offs**: device OTA uses HTTP by default for RAM reasons (see the top of this README). Switch the device-side `WORKER_URL` to `https://` if you need transport encryption and have the heap headroom. Note that GitHub Releases are public, so anyone can download your firmware binaries.
 - **Adapting to your project (checklist)**:
   1. Replace every placeholder token listed above.
-  2. Enable read/write workflow permissions (or uncomment `permissions: contents: write`).
+  2. Set **Settings → Actions → General → Workflow permissions** to **Read and write** on your repo (see [Release permissions](#release-permissions-required-for-publishing)).
   3. Deploy both Cloudflare Workers (OTA + reverse proxy).
   4. Set `WORKER_URL` in `directdownload.h` to your OTA worker.
   5. Define your boards in `platformio.ini` and add matching Actions build steps.

@@ -1,0 +1,81 @@
+name: esp32-build-and-release
+
+# permissions:
+#   contents: write  # Allow the workflow to push changes
+
+# on:
+#   push:
+#     branches: [ main ]
+on:
+  workflow_dispatch:
+    inputs:
+      version_num:
+        description: 'Version Number To Display On Screen'
+        type: string
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.11'
+
+    - name: Install PlatformIO
+      run: |
+        python -m pip install --upgrade pip
+        pip install platformio
+        mkdir -p bins/
+        export version_num="${{ inputs.version_num }}"
+        export release_tag_name="build-${{ github.run_number }}"
+        
+    - name: Create build script
+      run: |
+        cat > build_firmware.sh << 'EOF'
+        #!/bin/bash
+        folder=$1
+        buildname=$2
+        
+        cd $folder
+        export version_num="${{ inputs.version_num }}"
+        export release_tag_name="build-${{ github.run_number }}"
+        pio run -e ${buildname}_release
+        find .pio/build/ -type f -name '*.bin' -exec sh -c 'cp -- "$1" "../bins/'"${buildname}"'_${1##*/}"' _ {} \;
+        pio run -e ${buildname}_release --target clean
+        cd ..
+        EOF
+        chmod +x build_firmware.sh
+
+    - name: Build PlatformIO esp32
+      run: ./build_firmware.sh "Example-Github-CICD" "esp32"
+
+    - name: Build PlatformIO esp32_v2
+      run: ./build_firmware.sh "Example-Github-CICD" "esp32_v2"
+
+
+    - name: Create Release
+       # && github.event_name == 'push'
+      if: success() # && github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v3
+      with:
+        tag_name: build-${{ github.run_number }} # do not ever change this. It is used in the update process to decide if the current build is already installed
+        name: Release ${{ inputs.version_num }} (Build ${{ github.run_number }})
+        body: |
+          Automated build from commit ${{ github.sha }}
+
+          Release ID: ${{ inputs.version_num }}
+          Build number: ${{ github.run_number }}
+          
+          **Commit:** ${{ github.event.head_commit.message }}
+          **Date:** ${{ github.event.head_commit.timestamp }}
+        files: bins/*.bin
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

@@ -8,7 +8,7 @@ This repo is meant to be **copied into your own project**. Once wired up you get
 - Over-the-air (OTA) updates on the device through a tiny Cloudflare Worker that decides whether a device is already up to date and, if not, streams the new binary.
 - A browser-based "web installer" hosted for free on GitHub Pages so end users can flash a device over USB with no toolchain installed.
 
-It is based off the work in OASMan.
+It is based off the work in [OASMan](https://github.com/gopro2027/ArduinoAirSuspensionController).
 
 ## Why HTTP (lightweight) instead of HTTPS
 
